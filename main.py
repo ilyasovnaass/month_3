@@ -27,61 +27,30 @@
 
 # asyncio.run(main())
 
-import asyncio
-import logging
+import asyncio      # asyncio -- встроенная библиотека python, которая позволяет выполнять асинхронные операции
+import logging  # Логи - это информация о работе программы, которая помогает разработчику понять, что происходит внутри нее
+from aiogram import Bot, Dispatcher     # Мы импортируем два основных класса из библиотеки aiogram
+from src.handlers import router     # мы импортируем роутер из файла handlers.py, который находится внутри папки src
+from aiogram.fsm.storage.memory import MemoryStorage    # MemoryStorage -- это хранилище дпнных в оперативной памяти
+
+# FSM(FiniteStateMachine)- конечный автомат состояний. Он позволяет боту запоминать, на каком этапе диалога находится пользователь
 
 
 BOT_TOKEN = '8676423397:AAHVTJFVWoAYIrDPgbIcW-pEGti5lBn8i3M'
 
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
+
+bot = Bot(token=BOT_TOKEN)  # Мы создаем экземпляр класса Bot(), сохраняем созданный объект в переменную и через эту нее мы можем управлять ботом
+dp = Dispatcher(storage=MemoryStorage())    # Через диспетчер мы создаем функции, которыми обладает бот и управляем 
 
 
-@dp.message(CommandStart())
-async def cmd_start(message: Message):
-    await message.answer(
-        f'Привет {message.from_user.full_name}, я твой бот!'
-    )
-    print(f'Пользователь {message.from_user.full_name} написал команду start.')
+async def main():   # main -- это общепринятое название главной функции программы
+    dp.include_router(router)   # Подключаем наш роутер к диспетчеру
+    await dp.start_polling(bot)     # отправляет запросы на тг-сервер, также это комана для запуска бота
 
-@dp.message(Command('help'))
-async def help(message: Message):
-    await message.answer(
-        '/start - команда для запуска\n' \
-        '/help - список комманд'
-    )
+# Polling -- способ получения обновлений от тг, при котором бот регулярно запрашивает новые события
 
-@dp.message(F.text.lower() == 'группа')
-async def group(message: Message):
-    await message.answer(
-        'Твоя группа 71-1!'
-    )
 
-# @dp.message(F.from_user.id == 5667531193)
-# async def user(message: Message):
-#     await message.answer(
-#         'Привет мой создатель!'
-#     )
-
-# Домашка:
-
-@dp.message(Command('about'))
-async def about(message: Message):
-    await message.answer(
-        'Я бот-ассистент группы 71-1.\n' \
-        'Я умею отвечать на комманды и реагировать на слова.'
-    )
-
-@dp.message(F.text.lower() == 'пока')
-async def echo(message: Message):
-    await message.answer(
-        f'Пока-пока!'
-    )
-
-async def main():
-    await dp.start_polling(bot)     # отправляет запросы на тг-сервер
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    asyncio.run(main())
+if __name__ == '__main__':      # это защита от случайного запуска, и бот запускается лишь в папке main
+    logging.basicConfig(level=logging.INFO)     # у логирования есть уровни (INFO, DEBUG, WARNING, ERROR, CRITICAL)
+    asyncio.run(main())     # Запускает асинхронную функцию main()
     
